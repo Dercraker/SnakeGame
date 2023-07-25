@@ -42,7 +42,7 @@ public partial class MainWindow : Window
     private async Task RunGame()
     {
         Draw();
-        await ShopCountDown();
+        await ShowCountDown();
         Overlay.Visibility = Visibility.Hidden;
         await GameLoop();
         await ShowGameOver();
@@ -158,7 +158,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private async Task ShopCountDown()
+    private async Task ShowCountDown()
     {
         for (int i = 3; i >= 1; i--)
         {
