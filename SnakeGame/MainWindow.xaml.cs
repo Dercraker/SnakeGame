@@ -80,11 +80,27 @@ public partial class MainWindow : Window
         }
     }
 
+    //Replaced for ai with A*
+    //private async Task GameLoop()
+    //{
+    //    while (!gameState.GameOver)
+    //    {
+    //        await Task.Delay(100);
+    //        gameState.Move();
+    //        Draw();
+    //    }
+    //}
     private async Task GameLoop()
     {
         while (!gameState.GameOver)
         {
             await Task.Delay(100);
+
+            Position foodPostion = GetFoodPosition();
+            Direction aiDirection = gameState.GetNextMove(foodPostion);
+
+            gameState.ChangeDirection(aiDirection);
+
             gameState.Move();
             Draw();
         }
@@ -143,6 +159,19 @@ public partial class MainWindow : Window
 
         int rotation = dirToRotation[gameState.Dir];
         image.RenderTransform = new RotateTransform(rotation);
+    }
+
+    private Position GetFoodPosition()
+    {
+        for (int r = 0; r < rows; r++)
+        {
+            for (int c = 0; c < cols; c++)
+            {
+                if (gameState.Grid[r, c] == EGridValue.Food)
+                    return new(r, c);
+            }
+        }
+        return new(-1, -1);
     }
 
     private async Task DrawDeadSnake()
