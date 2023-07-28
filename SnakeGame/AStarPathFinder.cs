@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SnakeGame;
 public class AStarPathFinder
@@ -7,112 +8,82 @@ public class AStarPathFinder
     private readonly int rows, cols;
     private readonly EGridValue[,] grid;
     private readonly List<Position> snakePositions;
+    private readonly Position target;
 
-    public AStarPathFinder(int rows, int cols, EGridValue[,] grid, List<Position> snakePositions)
+    public AStarPathFinder(int rows, int cols, EGridValue[,] grid, List<Position> snakePositions, Position target)
     {
         this.rows = rows;
         this.cols = cols;
         this.grid = grid;
         this.snakePositions = snakePositions;
+        this.target = target;
     }
 
-    private int Heurisitic(Node current, Position target) => Math.Abs(current.Row - target.Row) + Math.Abs(current.Col - target.Column);
+    private int Heuristic(Position from, Position to) => Math.Abs(from.Row - to.Row) + Math.Abs(from.Column - to.Column);
 
-    private bool IsValid(int row, int col)
+    private bool IsWalkable(Position position)
     {
-        //check out of range of array
-        if (row < 0 || col < 0 || row >= rows || col >= cols)
+        if (position.Row < 0 || position.Row >= rows || position.Column < 0 || position.Column >= cols)
             return false;
 
-        //Check if given position are not outisde grid Obstacle or snake body
-        if (grid[row, col] is EGridValue.Outside or EGridValue.Obstacle or EGridValue.Snake)
+        if (grid[position.Row, position.Column] is EGridValue.Outside or EGridValue.Snake)
             return false;
 
         return true;
     }
 
-    private List<Node> GetNeighbors(Node current)
+    private List<Position> GetNeighbors(Position position)
     {
-        List<Node> neighbors = new();
+        List<Position> neighbors = new();
 
-        int[] rowOffsets = { -1, 0, 1, 0 };
-        int[] colOffsets = { 0, 1, 0, -1 };
-
-        for (int i = 0; i < 4; i++)
+        foreach (Direction direction in new[] { Direction.Up, Direction.Right, Direction.Down, Direction.Left })
         {
-            int newRow = current.Row + rowOffsets[i];
-            int newCol = current.Col + colOffsets[i];
+            Position neighbor = position.Translate(direction);
 
-            if (IsValid(newRow, newCol))
-                neighbors.Add(new(newRow, newCol));
+            if (IsWalkable(neighbor))
+                neighbors.Add(neighbor);
         }
 
         return neighbors;
     }
 
-    private List<Position> ReconstructPath(Node node)
+    private List<Position> ReconstructPath(Dictionary<Position, Position> cameFrom, Position current)
     {
-        List<Position> path = new();
-        Node current = node;
+        List<Position> path = new() { current };
 
-        while (current != null)
+        while (cameFrom.TryGetValue(current, out Position previous))
         {
-            path.Insert(0, new(current.Row, current.Col));
-            current = current.Parent;
+            current = previous;
+            path.Insert(0, current);
         }
 
         return path;
     }
 
-    public List<Position> FindPath(Position start, Position end)
+    public List<Position> FindPath()
     {
-        Node startNode = new(start.Row, start.Column);
-        Node targetNode = new(end.Row, end.Column);
-
-        if (!IsValid(end.Row, end.Column))
-            return new();
-
-        HashSet<Node> openSet = new() { startNode };
-        HashSet<Node> closedSet = new();
-
-        Dictionary<Node, int> gScores = new()
-        {
-            [startNode] = 0
-        };
+        Position start = snakePositions.First();
+        HashSet<Position> openSet = new() { start };
+        Dictionary<Position, Position> cameFrom = new();
+        Dictionary<Position, int> gScore = new() { { start, 0 } };
 
         while (openSet.Count > 0)
         {
-            Node current = null;
-            int lowestFScore = int.MaxValue;
+            Position current = GetLowestFScore(openSet, gScore);
 
-            foreach (Node node in openSet)
-            {
-                int fScore = node.F;
-                if (fScore < lowestFScore)
-                {
-                    current = node;
-                    lowestFScore = fScore;
-                }
-            }
-
-            if (current == targetNode)
-                ReconstructPath(current);
+            if (current == target)
+                return ReconstructPath(cameFrom, current);
 
             openSet.Remove(current);
-            closedSet.Add(current);
 
-            foreach (Node neighbor in GetNeighbors(current))
+            foreach (Position neighbor in GetNeighbors(current))
             {
-                if (closedSet.Contains(neighbor))
-                    continue;
+                int tentativeGScore = gScore[current] + 1;
 
-                int tentativeGScore = gScores[current] + 1;
-
-                if (!openSet.Contains(neighbor) || tentativeGScore < gScores[neighbor])
+                if (!gScore.ContainsKey(neighbor) || tentativeGScore < gScore[neighbor])
                 {
-                    neighbor.Parent = current;
-                    gScores[neighbor] = tentativeGScore;
-                    neighbor.H = Heurisitic(neighbor, end);
+                    cameFrom[neighbor] = current;
+                    gScore[neighbor] = tentativeGScore;
 
                     if (!openSet.Contains(neighbor))
                         openSet.Add(neighbor);
@@ -121,5 +92,26 @@ public class AStarPathFinder
         }
 
         return new();
+    }
+
+    private Position GetLowestFScore(HashSet<Position> openSet, Dictionary<Position, int> gScore)
+    {
+        int lowestFScore = int.MaxValue;
+        Position lowestFNode = null;
+
+        foreach (Position node in openSet)
+        {
+            if (gScore.TryGetValue(node, out int g))
+            {
+                int f = g + Heuristic(node, target);
+                if (f < lowestFScore)
+                {
+                    lowestFScore = f;
+                    lowestFNode = node;
+                }
+            }
+        }
+
+        return lowestFNode;
     }
 }

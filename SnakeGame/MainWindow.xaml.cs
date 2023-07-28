@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,6 +14,11 @@ namespace SnakeGame;
 /// </summary>
 public partial class MainWindow : Window
 {
+    private readonly Stopwatch _stopwatch = new();
+    private readonly List<TimeSpan> _time = new();
+    private readonly int gridSize = 50;
+    private readonly int playDelay_ms = 1;
+
     private readonly Dictionary<EGridValue, ImageSource> gridValToImage = new()
     {
         {EGridValue.Empty, Images.Empty },
@@ -27,16 +35,29 @@ public partial class MainWindow : Window
         { Direction.Left, 270 },
     };
 
-    private readonly int rows = 20, cols = 20;
+    private readonly int rows, cols;
     private readonly Image[,] gridImages;
     private GameState gameState;
     private bool gameRunning;
 
     public MainWindow()
     {
+        rows = gridSize;
+        cols = gridSize;
+
         InitializeComponent();
         gridImages = SetupGrid();
         gameState = new(rows, cols);
+    }
+
+    private void ShowDebugTime()
+    {
+        TimeSpan max = _time.Max();
+        Debug.WriteLine($"Max time : {max.Hours} hours, {max.Minutes} minutes, {max.Seconds} seconds, {max.Milliseconds} ms, {max.Nanoseconds} ns");
+        TimeSpan min = _time.Min();
+        Debug.WriteLine($"Min time : {min.Hours} hours, {min.Minutes} minutes, {min.Seconds} seconds, {min.Milliseconds} ms, {min.Nanoseconds} ns");
+        TimeSpan avg = TimeSpan.FromTicks((long)_time.Average(ts => ts.Ticks));
+        Debug.WriteLine($"AVG time : {avg.Hours} hours, {avg.Minutes} minutes, {avg.Seconds} seconds, {avg.Milliseconds} ms, {avg.Nanoseconds} ns");
     }
 
     private async Task RunGame()
@@ -46,7 +67,8 @@ public partial class MainWindow : Window
         Overlay.Visibility = Visibility.Hidden;
         await GameLoop();
         await ShowGameOver();
-        gameState = new GameState(rows, cols);
+        //gameState = new GameState(rows, cols);
+        //ShowDebugTime();
     }
 
     private async void Window_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -80,28 +102,45 @@ public partial class MainWindow : Window
         }
     }
 
-    //Replaced for ai with A*
-    //private async Task GameLoop()
-    //{
-    //    while (!gameState.GameOver)
-    //    {
-    //        await Task.Delay(100);
-    //        gameState.Move();
-    //        Draw();
-    //    }
-    //}
     private async Task GameLoop()
     {
         while (!gameState.GameOver)
         {
-            await Task.Delay(100);
+            await Task.Delay(playDelay_ms);
+            _stopwatch.Start();
+            if (gameState.Grid.Cast<EGridValue>().Contains(EGridValue.Food))
+            {
+                List<Position> pathToFood = gameState.FindPathToFood();
 
-            Position foodPostion = GetFoodPosition();
-            Direction aiDirection = gameState.GetNextMove(foodPostion);
+                if (pathToFood.Count > 1)
+                {
+                    Position nextMove = pathToFood[1];
+                    int rowDiff = nextMove.Row - gameState.HeadPosition().Row;
+                    int colDiff = nextMove.Column - gameState.HeadPosition().Column;
 
-            gameState.ChangeDirection(aiDirection);
+                    if (rowDiff != 0)
+                    {
+                        if (rowDiff > 0)
+                            gameState.ChangeDirection(Direction.Down);
+                        else
+                            gameState.ChangeDirection(Direction.Up);
+                    }
+                    else
+                    {
+                        if (colDiff > 0)
+                            gameState.ChangeDirection(Direction.Right);
+                        else
+                            gameState.ChangeDirection(Direction.Left);
+                    }
+                }
+            }
 
             gameState.Move();
+
+            _stopwatch.Stop();
+            _time.Add(_stopwatch.Elapsed);
+            _stopwatch.Reset();
+
             Draw();
         }
     }
@@ -161,19 +200,6 @@ public partial class MainWindow : Window
         image.RenderTransform = new RotateTransform(rotation);
     }
 
-    private Position GetFoodPosition()
-    {
-        for (int r = 0; r < rows; r++)
-        {
-            for (int c = 0; c < cols; c++)
-            {
-                if (gameState.Grid[r, c] == EGridValue.Food)
-                    return new(r, c);
-            }
-        }
-        return new(-1, -1);
-    }
-
     private async Task DrawDeadSnake()
     {
         List<Position> positions = new(gameState.SnakePosition());
@@ -192,7 +218,7 @@ public partial class MainWindow : Window
         for (int i = 3; i >= 1; i--)
         {
             OverlayText.Text = i.ToString();
-            await Task.Delay(500);
+            await Task.Delay(50);
         }
     }
 
@@ -202,5 +228,10 @@ public partial class MainWindow : Window
         await Task.Delay(500);
         Overlay.Visibility = Visibility.Visible;
         OverlayText.Text = "PRESS ANY KEY TO RESTART";
+
+        gameState = new GameState(rows, cols);
+        ShowDebugTime();
+        await Task.Delay(2000);
+        await RunGame();
     }
 }
