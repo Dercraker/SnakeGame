@@ -59,6 +59,17 @@ public class GameState
         Grid[pos.Row, pos.Column] = EGridValue.Food;
     }
 
+    private void AddObstacle()
+    {
+        List<Position> empty = new(EmptyPositions());
+
+        if (empty.Count == 0)
+            return;
+
+        Position pos = empty[random.Next(empty.Count)];
+        Grid[pos.Row, pos.Column] = EGridValue.Obstacle;
+    }
+
     public Position HeadPosition() => snakePositions.First.Value;
     public Position TailPosition() => snakePositions.Last.Value;
 
@@ -124,7 +135,7 @@ public class GameState
         Position newHeadPosition = HeadPosition().Translate(Dir);
         EGridValue hit = WillHit(newHeadPosition);
 
-        if (hit is EGridValue.Outside or EGridValue.Snake)
+        if (hit is EGridValue.Outside or EGridValue.Snake or EGridValue.Obstacle)
             GameOver = true;
         else if (hit == EGridValue.Empty)
         {
@@ -135,6 +146,11 @@ public class GameState
         {
             AddHead(newHeadPosition);
             Score++;
+            if (Score % 10 == 0 && Score < 100)
+            {
+                AddFood();
+                AddObstacle();
+            }
             AddFood();
         }
     }

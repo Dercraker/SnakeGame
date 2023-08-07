@@ -16,6 +16,7 @@ public partial class MainWindow : Window
         {EGridValue.Empty, Images.Empty },
         {EGridValue.Snake, Images.SnakeBody },
         {EGridValue.Food, Images.Apple },
+        {EGridValue.Obstacle, Images.Obstacle },
 
     };
 
