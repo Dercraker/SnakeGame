@@ -11,7 +11,7 @@ public static class Images
     public static ImageSource SnakeBody => LoadImage("Body.png");
     public static ImageSource SnakeHead => LoadImage("Head.png");
     public static ImageSource Apple => LoadImage("Food.png");
-    public static ImageSource Obstacle => LoadImage("DeadBody.png");
+    public static ImageSource Obstacle => LoadImage("Obstacle.png");
     public static ImageSource DeadSnakeBody => LoadImage("DeadBody.png");
     public static ImageSource DeadSnakeHead => LoadImage("DeadHead.png");
 
