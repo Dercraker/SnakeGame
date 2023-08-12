@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Media;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,6 +17,7 @@ public partial class MainWindow : Window
         {EGridValue.Empty, Images.Empty },
         {EGridValue.Snake, Images.SnakeBody },
         {EGridValue.Food, Images.Apple },
+        {EGridValue.Obstacle, Images.Obstacle },
 
     };
 
@@ -31,6 +33,9 @@ public partial class MainWindow : Window
     private readonly Image[,] gridImages;
     private GameState gameState;
     private bool gameRunning;
+    private readonly SoundPlayer dieSoundPlayer = new(Assets.Resource.SnakeDie);
+    private readonly SoundPlayer countDownSoundPlayer = new(Assets.Resource.CountDown);
+    private readonly SoundPlayer startSoundPlayer = new(Assets.Resource.Start);
 
     public MainWindow()
     {
@@ -162,13 +167,16 @@ public partial class MainWindow : Window
     {
         for (int i = 3; i >= 1; i--)
         {
+            countDownSoundPlayer.Play();
             OverlayText.Text = i.ToString();
             await Task.Delay(500);
         }
+        startSoundPlayer.Play();
     }
 
     private async Task ShowGameOver()
     {
+        dieSoundPlayer.Play();
         await DrawDeadSnake();
         await Task.Delay(500);
         Overlay.Visibility = Visibility.Visible;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Media;
 
 namespace SnakeGame;
 public class GameState
@@ -14,6 +15,8 @@ public class GameState
     private readonly LinkedList<Direction> dirChanges = new();
     private readonly LinkedList<Position> snakePositions = new();
     private readonly Random random = new();
+    private readonly SoundPlayer eatSoundPlayer = new(Assets.Resource.EatFood);
+    private readonly SoundPlayer levelBonusSoundPlayer = new(Assets.Resource.LevelBonus);
 
     public GameState(int rows, int cols)
     {
@@ -57,6 +60,17 @@ public class GameState
 
         Position pos = empty[random.Next(empty.Count)];
         Grid[pos.Row, pos.Column] = EGridValue.Food;
+    }
+
+    private void AddObstacle()
+    {
+        List<Position> empty = new(EmptyPositions());
+
+        if (empty.Count == 0)
+            return;
+
+        Position pos = empty[random.Next(empty.Count)];
+        Grid[pos.Row, pos.Column] = EGridValue.Obstacle;
     }
 
     public Position HeadPosition() => snakePositions.First.Value;
@@ -124,7 +138,7 @@ public class GameState
         Position newHeadPosition = HeadPosition().Translate(Dir);
         EGridValue hit = WillHit(newHeadPosition);
 
-        if (hit is EGridValue.Outside or EGridValue.Snake)
+        if (hit is EGridValue.Outside or EGridValue.Snake or EGridValue.Obstacle)
             GameOver = true;
         else if (hit == EGridValue.Empty)
         {
@@ -133,8 +147,17 @@ public class GameState
         }
         else if (hit == EGridValue.Food)
         {
-            AddHead(newHeadPosition);
             Score++;
+            if (Score % 10 == 0 && Score < 100)
+            {
+                levelBonusSoundPlayer.Play();
+                AddFood();
+                AddObstacle();
+            }
+            else
+                eatSoundPlayer.Play();
+
+            AddHead(newHeadPosition);
             AddFood();
         }
     }
