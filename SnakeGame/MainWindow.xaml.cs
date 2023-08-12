@@ -44,29 +44,10 @@ public partial class MainWindow : Window
         gameState = new(rows, cols);
     }
 
-    private async Task RunGame()
+    private void OpenSettingsBtn_Click(object sender, RoutedEventArgs e)
     {
-        Draw();
-        await ShowCountDown();
-        Overlay.Visibility = Visibility.Hidden;
-        await GameLoop();
-        await ShowGameOver();
-        gameState = new GameState(rows, cols);
+
     }
-
-    private async void Window_PreviewKeyDown(object sender, KeyEventArgs e)
-    {
-        if (Overlay.Visibility is Visibility.Visible)
-            e.Handled = true;
-
-        if (!gameRunning)
-        {
-            gameRunning = true;
-            await RunGame();
-            gameRunning = false;
-        }
-    }
-
     private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
         if (gameState.GameOver)
@@ -85,13 +66,20 @@ public partial class MainWindow : Window
         }
     }
 
-    private async Task GameLoop()
+    #region Game
+    private async void StartGame_Click(object sender, RoutedEventArgs e)
     {
-        while (!gameState.GameOver)
+        if (Overlay.Visibility is Visibility.Visible)
+            e.Handled = true;
+
+        MenuView.Visibility = Visibility.Hidden;
+        GameView.Visibility = Visibility.Visible;
+
+        if (!gameRunning)
         {
-            await Task.Delay(100);
-            gameState.Move();
-            Draw();
+            gameRunning = true;
+            await RunGame();
+            gameRunning = false;
         }
     }
 
@@ -118,6 +106,26 @@ public partial class MainWindow : Window
         }
 
         return images;
+    }
+
+    private async Task RunGame()
+    {
+        Draw();
+        await ShowCountDown();
+        Overlay.Visibility = Visibility.Hidden;
+        await GameLoop();
+        await ShowGameOver();
+        gameState = new GameState(rows, cols);
+    }
+
+    private async Task GameLoop()
+    {
+        while (!gameState.GameOver)
+        {
+            await Task.Delay(100);
+            gameState.Move();
+            Draw();
+        }
     }
 
     private void Draw()
@@ -150,6 +158,17 @@ public partial class MainWindow : Window
         image.RenderTransform = new RotateTransform(rotation);
     }
 
+    private async Task ShowCountDown()
+    {
+        for (int i = 3; i >= 1; i--)
+        {
+            countDownSoundPlayer.Play();
+            OverlayText.Text = i.ToString();
+            await Task.Delay(500);
+        }
+        startSoundPlayer.Play();
+    }
+
     private async Task DrawDeadSnake()
     {
         List<Position> positions = new(gameState.SnakePosition());
@@ -163,17 +182,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private async Task ShowCountDown()
-    {
-        for (int i = 3; i >= 1; i--)
-        {
-            countDownSoundPlayer.Play();
-            OverlayText.Text = i.ToString();
-            await Task.Delay(500);
-        }
-        startSoundPlayer.Play();
-    }
-
     private async Task ShowGameOver()
     {
         dieSoundPlayer.Play();
@@ -182,4 +190,5 @@ public partial class MainWindow : Window
         Overlay.Visibility = Visibility.Visible;
         OverlayText.Text = "PRESS ANY KEY TO RESTART";
     }
+    #endregion
 }
