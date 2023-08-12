@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Media;
 
 namespace SnakeGame;
 public class GameState
@@ -14,6 +15,8 @@ public class GameState
     private readonly LinkedList<Direction> dirChanges = new();
     private readonly LinkedList<Position> snakePositions = new();
     private readonly Random random = new();
+    private readonly SoundPlayer eatSoundPlayer = new(Assets.Resource.EatFood);
+    private readonly SoundPlayer levelBonusSoundPlayer = new(Assets.Resource.LevelBonus);
 
     public GameState(int rows, int cols)
     {
@@ -144,13 +147,17 @@ public class GameState
         }
         else if (hit == EGridValue.Food)
         {
-            AddHead(newHeadPosition);
             Score++;
             if (Score % 10 == 0 && Score < 100)
             {
+                levelBonusSoundPlayer.Play();
                 AddFood();
                 AddObstacle();
             }
+            else
+                eatSoundPlayer.Play();
+
+            AddHead(newHeadPosition);
             AddFood();
         }
     }

@@ -9,26 +9,75 @@
 
   <ItemGroup>
     <None Remove="Assets\Body.png" />
+    <None Remove="Assets\CountDown.wav" />
     <None Remove="Assets\DeadBody.png" />
     <None Remove="Assets\DeadHead.png" />
     <None Remove="Assets\DroidSansMono.ttf" />
+    <None Remove="Assets\EatFood.wav" />
     <None Remove="Assets\Empty.png" />
     <None Remove="Assets\Food.png" />
     <None Remove="Assets\Head.png" />
     <None Remove="Assets\icon.ico" />
     <None Remove="Assets\Obstacle.png" />
+    <None Remove="Assets\SnakeDie.wav" />
+    <None Remove="Assets\Start.wav" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\Body.png" />
-    <Resource Include="Assets\DeadBody.png" />
-    <Resource Include="Assets\DeadHead.png" />
-    <Resource Include="Assets\DroidSansMono.ttf" />
-    <Resource Include="Assets\Empty.png" />
-    <Resource Include="Assets\Food.png" />
-    <Resource Include="Assets\Head.png" />
-    <Resource Include="Assets\icon.ico" />
-    <Resource Include="Assets\Obstacle.png" />
+    <Resource Include="Assets\Body.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\CountDown.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\DeadBody.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\DeadHead.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\DroidSansMono.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\EatFood.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\Empty.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\Food.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\Head.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\Obstacle.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\SnakeDie.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\Start.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Assets\Resource.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resource.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Assets\Resource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>
