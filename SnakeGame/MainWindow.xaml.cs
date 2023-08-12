@@ -48,6 +48,21 @@ public partial class MainWindow : Window
     {
 
     }
+
+    private async void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (GameView.Visibility is Visibility.Hidden)
+            return;
+
+        if (Overlay.Visibility is Visibility.Visible)
+            e.Handled = true;
+        if (!gameRunning)
+        {
+            gameRunning = true;
+            await RunGame();
+            gameRunning = false;
+        }
+    }
     private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
         if (gameState.GameOver)

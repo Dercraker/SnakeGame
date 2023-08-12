@@ -16,6 +16,7 @@
         WindowStartupLocation="CenterScreen"
         Icon="Assets/icon.ico"
         
+        PreviewKeyDown="Window_PreviewKeyDown"
         KeyDown="Window_KeyDown">
 
     <Grid>
