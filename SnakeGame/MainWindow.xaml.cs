@@ -44,15 +44,20 @@ public partial class MainWindow : Window
         gameState = new(rows, cols);
     }
 
-    private void OpenSettingsBtn_Click(object sender, RoutedEventArgs e)
+    private void OverlayReturnMenuButton_Click(object sender, RoutedEventArgs e)
     {
-
+        gameRunning = false;
+        GameView.Visibility = Visibility.Hidden;
+        MenuView.Visibility = Visibility.Visible;
+        OverlayButton.Visibility = Visibility.Hidden;
     }
 
     private async void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (GameView.Visibility is Visibility.Hidden)
             return;
+
+        OverlayButton.Visibility = Visibility.Hidden;
 
         if (Overlay.Visibility is Visibility.Visible)
             e.Handled = true;
@@ -98,6 +103,49 @@ public partial class MainWindow : Window
         }
     }
 
+    #region AI
+    private async void StartAIGame_Click(object sender, RoutedEventArgs e)
+    {
+        if (Overlay.Visibility is Visibility.Visible)
+            e.Handled = true;
+
+        MenuView.Visibility = Visibility.Hidden;
+        GameView.Visibility = Visibility.Visible;
+
+        if (!gameRunning)
+        {
+            gameRunning = true;
+            await RunAIGame();
+            gameRunning = false;
+        }
+    }
+
+    private async Task RunAIGame()
+    {
+        while (gameRunning)
+        {
+            Draw();
+            await ShowCountDown();
+            Overlay.Visibility = Visibility.Hidden;
+            await GameLoop();
+            await ShowAIGameOver();
+            gameState = new GameState(rows, cols);
+        }
+    }
+
+    private async Task ShowAIGameOver()
+    {
+        dieSoundPlayer.Play();
+        await DrawDeadSnake();
+        await Task.Delay(500);
+        OverlayButton.Visibility = Visibility.Visible;
+        Overlay.Visibility = Visibility.Visible;
+        OverlayText.Text = "Game will restart in few seconds";
+        await Task.Delay(2000);
+
+    }
+    #endregion
+
     private Image[,] SetupGrid()
     {
         Image[,] images = new Image[rows, cols];
@@ -132,6 +180,8 @@ public partial class MainWindow : Window
         await ShowGameOver();
         gameState = new GameState(rows, cols);
     }
+
+
 
     private async Task GameLoop()
     {
@@ -202,6 +252,7 @@ public partial class MainWindow : Window
         dieSoundPlayer.Play();
         await DrawDeadSnake();
         await Task.Delay(500);
+        OverlayButton.Visibility = Visibility.Visible;
         Overlay.Visibility = Visibility.Visible;
         OverlayText.Text = "PRESS ANY KEY TO RESTART";
     }

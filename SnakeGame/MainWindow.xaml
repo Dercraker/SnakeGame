@@ -29,8 +29,8 @@
             </Grid.RowDefinitions>
             
             <TextBlock x:Name="Title" Text="Snake Game" Grid.Row="0"/>
-            <Button x:Name="StartGameBtn" Content="Start new game" Click="StartGame_Click" Grid.Row="1"/>
-            <Button x:Name="SettingsBtn" Content="Settings" Click="OpenSettingsBtn_Click" Grid.Row="2"/>
+            <Button x:Name="StartGameBtn" Content="Start normal game" Click="StartGame_Click" Grid.Row="1"/>
+            <Button x:Name="SettingsBtn" Content="Start AI game" Click="StartAIGame_Click" Grid.Row="2"/>
         </Grid>
         <Grid x:Name="GameView" Visibility="Hidden">
             <Grid.RowDefinitions>
@@ -62,22 +62,31 @@
                 </UniformGrid>
             </Border>
 
+
             <Border x:Name="Overlay"
                     Grid.Row="1"
                     Background="{StaticResource OverlayColor}"
                     Width="{Binding Path=ActualWith, ElementName=GridBorder}"
-                    Height="{Binding Path=ActualHeight, ElementName=GridBorder}"
                     Margin="{Binding Path=Margin, ElementName=GridBorder}"
                     RenderOptions.EdgeMode="Aliased">
-                <TextBlock x:Name="OverlayText"
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                    <TextBlock x:Name="OverlayText"
                            Text="PRESS ANY KEY TO START"
                            FontSize="26"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            TextWrapping="Wrap"/>
+                    <Button x:Name="OverlayButton"
+                            Visibility="Hidden"
+                            Content="Back to menu"
+                            Height="auto"
+                            Width="auto"
+                            Click="OverlayReturnMenuButton_Click"/>
+                </StackPanel>
             </Border>
         </Grid>
-        <Grid x:Name="SettingsView" Visibility="Hidden"></Grid>
     </Grid>
         
 </Window>
